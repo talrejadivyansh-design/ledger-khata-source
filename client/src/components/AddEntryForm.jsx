@@ -44,8 +44,23 @@ export default function AddEntryForm({ initialEntry, onSubmit, onCancel, saving 
     onSubmit(form);
   }
 
+  function handleFormKeyDown(e) {
+    if (e.key !== "Enter") return;
+    if (e.target.name === "newCompanyName") {
+      e.preventDefault();
+      handleAddCompany();
+      return;
+    }
+    e.preventDefault();
+    handleSubmit(e);
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+    <form
+      onSubmit={handleSubmit}
+      onKeyDown={handleFormKeyDown}
+      className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
+    >
       <div className="grid grid-cols-2 gap-2">
         <label className="text-xs text-slate-500">
           Date
@@ -71,6 +86,7 @@ export default function AddEntryForm({ initialEntry, onSubmit, onCancel, saving 
             <div className="mt-1 flex gap-1">
               <input
                 autoFocus
+                name="newCompanyName"
                 className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm"
                 placeholder="New company name"
                 value={newCompanyName}

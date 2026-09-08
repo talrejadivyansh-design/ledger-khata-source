@@ -15,13 +15,16 @@ export const api = {
   getDealer: async (id) => unwrap(await supabase.from("dealers").select("*").eq("id", id).single()),
 
   createDealer: async ({ name, phone, address, opening_debit, opening_credit }) => {
-    const dealer = unwrap(
-      await supabase
-        .from("dealers")
-        .insert({ name: name.trim(), phone: phone?.trim() || null, address: address?.trim() || null })
-        .select()
-        .single()
-    );
+    const { data, error } = await supabase
+      .from("dealers")
+      .insert({ name: name.trim(), phone: phone?.trim() || null, address: address?.trim() || null })
+      .select()
+      .single();
+    if (error) {
+      if (error.code === "23505") throw new Error(`A dealer named "${name.trim()}" is already in your list.`);
+      throw new Error(error.message);
+    }
+    const dealer = data;
 
     const openingDebit = Number(opening_debit) || 0;
     const openingCredit = Number(opening_credit) || 0;
@@ -38,15 +41,19 @@ export const api = {
     return dealer;
   },
 
-  updateDealer: async (id, { name, phone, address }) =>
-    unwrap(
-      await supabase
-        .from("dealers")
-        .update({ name: name.trim(), phone: phone?.trim() || null, address: address?.trim() || null })
-        .eq("id", id)
-        .select()
-        .single()
-    ),
+  updateDealer: async (id, { name, phone, address }) => {
+    const { data, error } = await supabase
+      .from("dealers")
+      .update({ name: name.trim(), phone: phone?.trim() || null, address: address?.trim() || null })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) {
+      if (error.code === "23505") throw new Error(`A dealer named "${name.trim()}" is already in your list.`);
+      throw new Error(error.message);
+    }
+    return data;
+  },
 
   updateReminderSettings: async (id, { reminder_enabled, first_reminder_days, resend_interval_days }) =>
     unwrap(
