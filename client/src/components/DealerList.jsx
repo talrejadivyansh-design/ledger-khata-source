@@ -8,7 +8,7 @@ export default function DealerList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", phone: "", address: "" });
+  const [form, setForm] = useState({ name: "", phone: "", address: "", opening_debit: "", opening_credit: "" });
   const [saving, setSaving] = useState(false);
 
   async function load(q = "") {
@@ -38,7 +38,7 @@ export default function DealerList() {
     setSaving(true);
     try {
       await api.createDealer(form);
-      setForm({ name: "", phone: "", address: "" });
+      setForm({ name: "", phone: "", address: "", opening_debit: "", opening_credit: "" });
       setShowForm(false);
       load(search);
     } catch (err) {
@@ -86,6 +86,30 @@ export default function DealerList() {
             value={form.address}
             onChange={(e) => setForm({ ...form, address: e.target.value })}
           />
+          <p className="text-xs text-slate-500">
+            If this dealer already owes/is owed money before you started using the app, enter it here as an
+            opening balance.
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              placeholder="Opening debit"
+              value={form.opening_debit}
+              onChange={(e) => setForm({ ...form, opening_debit: e.target.value, opening_credit: "" })}
+            />
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              placeholder="Opening credit"
+              value={form.opening_credit}
+              onChange={(e) => setForm({ ...form, opening_credit: e.target.value, opening_debit: "" })}
+            />
+          </div>
           <button
             disabled={saving}
             className="w-full rounded-md bg-blue-700 px-3 py-2 text-sm font-medium text-white disabled:opacity-60"

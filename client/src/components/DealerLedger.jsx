@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import AddEntryForm from "./AddEntryForm.jsx";
 import OcrScan from "./OcrScan.jsx";
+import ReminderPanel from "./ReminderPanel.jsx";
 
 function formatDate(iso) {
   const [y, m, d] = iso.split("-");
@@ -17,6 +18,7 @@ export default function DealerLedger() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [mode, setMode] = useState(null); // null | "form" | "scan"
+  const [editingEntry, setEditingEntry] = useState(null);
   const [saving, setSaving] = useState(false);
 
   async function load() {
@@ -43,6 +45,20 @@ export default function DealerLedger() {
     try {
       await api.createEntry(dealerId, form);
       setMode(null);
+      load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleSaveEdit(form) {
+    setSaving(true);
+    setError("");
+    try {
+      await api.updateEntry(dealerId, editingEntry.id, form);
+      setEditingEntry(null);
       load();
     } catch (err) {
       setError(err.message);
@@ -97,9 +113,14 @@ export default function DealerLedger() {
         </p>
       </div>
 
+      <ReminderPanel dealer={dealer} currentBalance={currentBalance} onUpdated={setDealer} />
+
       <div className="flex gap-2">
         <button
-          onClick={() => setMode(mode === "form" ? null : "form")}
+          onClick={() => {
+            setEditingEntry(null);
+            setMode(mode === "form" ? null : "form");
+          }}
           className="flex-1 rounded-lg bg-blue-700 px-3 py-2 text-sm font-medium text-white"
         >
           + Add entry
@@ -114,7 +135,17 @@ export default function DealerLedger() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {mode === "form" && <AddEntryForm onSubmit={handleAddEntry} onCancel={() => setMode(null)} saving={saving} />}
+      {mode === "form" && !editingEntry && (
+        <AddEntryForm onSubmit={handleAddEntry} onCancel={() => setMode(null)} saving={saving} />
+      )}
+      {editingEntry && (
+        <AddEntryForm
+          initialEntry={editingEntry}
+          onSubmit={handleSaveEdit}
+          onCancel={() => setEditingEntry(null)}
+          saving={saving}
+        />
+      )}
       {mode === "scan" && (
         <OcrScan
           dealerId={dealerId}
@@ -127,11 +158,12 @@ export default function DealerLedger() {
       )}
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
-        <table className="w-full min-w-[480px] text-sm">
+        <table className="w-full min-w-[560px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs text-slate-500">
               <th className="px-3 py-2">Date</th>
               <th className="px-3 py-2">Bill No.</th>
+              <th className="px-3 py-2">Company</th>
               <th className="px-3 py-2 text-right">Debit</th>
               <th className="px-3 py-2 text-right">Credit</th>
               <th className="px-3 py-2 text-right">Balance</th>
@@ -141,7 +173,7 @@ export default function DealerLedger() {
           <tbody>
             {entries.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-3 py-6 text-center text-slate-400">
+                <td colSpan={7} className="px-3 py-6 text-center text-slate-400">
                   No entries yet.
                 </td>
               </tr>
@@ -150,10 +182,20 @@ export default function DealerLedger() {
                 <tr key={e.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-3 py-2 whitespace-nowrap">{formatDate(e.entry_date)}</td>
                   <td className="px-3 py-2">{e.bill_no || "-"}</td>
+                  <td className="px-3 py-2">{e.company?.name || "-"}</td>
                   <td className="px-3 py-2 text-right">{e.debit ? e.debit.toLocaleString("en-IN") : "-"}</td>
                   <td className="px-3 py-2 text-right">{e.credit ? e.credit.toLocaleString("en-IN") : "-"}</td>
                   <td className="px-3 py-2 text-right font-medium">{e.balance.toLocaleString("en-IN")}</td>
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-3 py-2 text-right whitespace-nowrap">
+                    <button
+                      onClick={() => {
+                        setMode(null);
+                        setEditingEntry(e);
+                      }}
+                      className="mr-2 text-xs text-blue-600"
+                    >
+                      Edit
+                    </button>
                     <button onClick={() => handleDeleteEntry(e.id)} className="text-xs text-red-500">
                       ✕
                     </button>
