@@ -4,6 +4,7 @@ import { api } from "../api.js";
 import AddEntryForm from "./AddEntryForm.jsx";
 import OcrScan from "./OcrScan.jsx";
 import ReminderPanel from "./ReminderPanel.jsx";
+import { focusNextFieldOnEnter } from "../lib/formKeyboard.js";
 
 function formatDate(iso) {
   const [y, m, d] = iso.split("-");
@@ -119,7 +120,7 @@ export default function DealerLedger() {
     <div className="space-y-4">
       <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
         {editingDealer ? (
-          <form onSubmit={handleSaveDealer} className="space-y-2">
+          <form onSubmit={handleSaveDealer} onKeyDown={focusNextFieldOnEnter} className="space-y-2">
             <input
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
               placeholder="Dealer name *"

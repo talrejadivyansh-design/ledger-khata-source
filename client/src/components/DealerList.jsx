@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api.js";
+import { focusNextFieldOnEnter } from "../lib/formKeyboard.js";
 
 export default function DealerList() {
   const [dealers, setDealers] = useState([]);
@@ -66,7 +67,11 @@ export default function DealerList() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleAddDealer} className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+        <form
+          onSubmit={handleAddDealer}
+          onKeyDown={focusNextFieldOnEnter}
+          className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
+        >
           <input
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
             placeholder="Dealer name *"

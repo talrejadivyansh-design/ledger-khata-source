@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api.js";
+import { focusNextFieldOnEnter } from "../lib/formKeyboard.js";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -51,8 +52,7 @@ export default function AddEntryForm({ initialEntry, onSubmit, onCancel, saving 
       handleAddCompany();
       return;
     }
-    e.preventDefault();
-    handleSubmit(e);
+    focusNextFieldOnEnter(e);
   }
 
   return (
