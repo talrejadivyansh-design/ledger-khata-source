@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api.js";
-import { focusNextFieldOnEnter } from "../lib/formKeyboard.js";
+import { handleFieldNav } from "../lib/formKeyboard.js";
 
 export default function DealerList() {
   const [dealers, setDealers] = useState([]);
@@ -69,10 +69,11 @@ export default function DealerList() {
       {showForm && (
         <form
           onSubmit={handleAddDealer}
-          onKeyDown={focusNextFieldOnEnter}
+          onKeyDown={(e) => handleFieldNav(e, { skipWhenFilled: { opening_debit: "opening_credit" } })}
           className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
         >
           <input
+            name="name"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
             placeholder="Dealer name *"
             value={form.name}
@@ -80,12 +81,14 @@ export default function DealerList() {
             required
           />
           <input
+            name="phone"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
             placeholder="Phone"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
           />
           <input
+            name="address"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
             placeholder="Address"
             value={form.address}
@@ -98,6 +101,7 @@ export default function DealerList() {
           <div className="grid grid-cols-2 gap-2">
             <input
               type="number"
+              name="opening_debit"
               min="0"
               step="0.01"
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
@@ -107,6 +111,7 @@ export default function DealerList() {
             />
             <input
               type="number"
+              name="opening_credit"
               min="0"
               step="0.01"
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"

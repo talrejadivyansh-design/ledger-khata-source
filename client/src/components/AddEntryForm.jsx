@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api.js";
-import { focusNextFieldOnEnter } from "../lib/formKeyboard.js";
+import { handleFieldNav } from "../lib/formKeyboard.js";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -46,13 +46,12 @@ export default function AddEntryForm({ initialEntry, onSubmit, onCancel, saving 
   }
 
   function handleFormKeyDown(e) {
-    if (e.key !== "Enter") return;
-    if (e.target.name === "newCompanyName") {
+    if (e.key === "Enter" && e.target.name === "newCompanyName") {
       e.preventDefault();
       handleAddCompany();
       return;
     }
-    focusNextFieldOnEnter(e);
+    handleFieldNav(e, { skipWhenFilled: { debit: "credit" } });
   }
 
   return (
@@ -66,6 +65,7 @@ export default function AddEntryForm({ initialEntry, onSubmit, onCancel, saving 
           Date
           <input
             type="date"
+            name="entry_date"
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
             value={form.entry_date}
             onChange={(e) => setForm({ ...form, entry_date: e.target.value })}
@@ -75,6 +75,7 @@ export default function AddEntryForm({ initialEntry, onSubmit, onCancel, saving 
         <label className="text-xs text-slate-500">
           Bill No.
           <input
+            name="bill_no"
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
             value={form.bill_no}
             onChange={(e) => setForm({ ...form, bill_no: e.target.value })}
@@ -112,6 +113,7 @@ export default function AddEntryForm({ initialEntry, onSubmit, onCancel, saving 
             </div>
           ) : (
             <select
+              name="company_id"
               className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
               value={form.company_id}
               onChange={(e) => {
@@ -137,6 +139,7 @@ export default function AddEntryForm({ initialEntry, onSubmit, onCancel, saving 
           Debit
           <input
             type="number"
+            name="debit"
             min="0"
             step="0.01"
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
@@ -148,6 +151,7 @@ export default function AddEntryForm({ initialEntry, onSubmit, onCancel, saving 
           Credit
           <input
             type="number"
+            name="credit"
             min="0"
             step="0.01"
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
@@ -157,6 +161,7 @@ export default function AddEntryForm({ initialEntry, onSubmit, onCancel, saving 
         </label>
       </div>
       <input
+        name="note"
         className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
         placeholder="Note (optional)"
         value={form.note}
